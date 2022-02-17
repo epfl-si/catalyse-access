@@ -7,12 +7,12 @@ $log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Monolog\Logger::D
 $log->warning('Foo');
 
 $provider = new \League\OAuth2\Client\Provider\GenericProvider([
-    'clientId'                => '123412342134123421341234@epfl.ch',    // The client ID assigned to you by the provider
-    'clientSecret'            => '123412342134123421341234123412341',   // The client password assigned to you by the provider
-    'redirectUri'             => 'site.epfl.ch/login/12345678-1234-1234-1234-1234/callback',
-    'urlAuthorize'            => 'https://test-tequila.epfl.ch/v2/OAUTH2IdP/auth',
-    'urlAccessToken'          => 'https://test-tequila.epfl.ch/v2/OAUTH2IdP/token',
-    'urlResourceOwnerDetails' => 'https://test-tequila.epfl.ch/v2/OAUTH2IdP/userinfo'
+    'clientId'                => getenv()['OAUTH_CLIENT_ID'],     // The client ID assigned to you by the provider
+    'clientSecret'            => getenv()['OAUTH_CLIENT_SECRET'], // The client password assigned to you by the provider
+    'redirectUri'             => getenv()['OAUTH_REDIRECT'],
+    'urlAuthorize'            => 'https://tequila.epfl.ch/v2/OAUTH2IdP/auth',
+    'urlAccessToken'          => 'https://tequila.epfl.ch/v2/OAUTH2IdP/token',
+    'urlResourceOwnerDetails' => 'https://tequila.epfl.ch/v2/OAUTH2IdP/userinfo'
 ]);
 
 // If we don't have an authorization code then get one
