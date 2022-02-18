@@ -10,15 +10,20 @@ ps:
 
 .PHONY: up
 ## docker-compose up
-up:
+up: applog
 	docker-compose up
 
 .PHONY: upd
 ## docker-compose up -d
-upd:
+upd: applog
 	docker-compose up -d
 
 .PHONY: logs
 ## docker-compose logs -f -t --tail=150
 logs:
 	docker-compose logs -f -t --tail=150
+
+.PHONY: applog
+## create the app/app.log file
+applog:
+	touch app/app.log && chmod 777 app/app.log

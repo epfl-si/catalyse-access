@@ -52,8 +52,9 @@ if (!isset($_GET['code'])) {
         // requests against the service provider's API.
         echo 'Access Token: ' . $accessToken->getToken() . "<br>";
         echo 'Refresh Token: ' . $accessToken->getRefreshToken() . "<br>";
-        echo 'Expired in: ' . $accessToken->getExpires() . "<br>";
-        echo 'Already expired? ' . ($accessToken->hasExpired() ? 'expired' : 'not expired') . "<br>";
+        // Not Working
+        // echo 'Expired in: ' . $accessToken->getExpires() . "<br>";
+        // echo 'Already expired? ' . ($accessToken->hasExpired() ? 'expired' : 'not expired') . "<br>";
 
         // Using the access token, we may look up details about the
         // resource owner.
