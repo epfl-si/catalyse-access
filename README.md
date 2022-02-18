@@ -9,11 +9,13 @@ A intercalary page to handle access to "catalyse".
 
 ## development
 
+To do once:
 1. get your own copy with `git clone`
-2. down in the app directory, run `composer install`
 3. add the line `127.0.0.1	catalyse-access-dev.epfl.ch` in your `/etc/hosts`
 4. create the `.env` file from the `.env.sample`
-5. run `make up` to start the project
+
+Then, whenever you want to hack on it:
+1. run `make up` to start the project
 
 ## doc
 

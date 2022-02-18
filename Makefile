@@ -12,6 +12,10 @@ ps:
 ## docker-compose up
 up: applog
 	docker-compose up
+	$(MAKE) app/vendor
+
+app/vendor:
+	 docker run --rm --volume $$PWD/app:/app composer install
 
 .PHONY: upd
 ## docker-compose up -d
