@@ -21,7 +21,11 @@ if (!isset($_GET['code'])) {
     // Fetch the authorization URL from the provider; this returns the
     // urlAuthorize option and generates and applies any necessary parameters
     // (e.g. state).
-    $authorizationUrl = $provider->getAuthorizationUrl();
+    $authorizationUrl = $provider->getAuthorizationUrl(
+        ['scope' =>
+         ['Tequila.profile',
+          # TODO: guess the ones for `Statut` and `droit-sig0000`
+         ]]);
 
     // Get the state generated for you and store it to the session.
     $_SESSION['oauth2state'] = $provider->getState();
@@ -48,10 +52,12 @@ if (!isset($_GET['code'])) {
             'code' => $_GET['code']
         ]);
 
+
         // We have an access token, which we may use in authenticated
         // requests against the service provider's API.
         echo 'Access Token: ' . $accessToken->getToken() . "<br>";
         echo 'Refresh Token: ' . $accessToken->getRefreshToken() . "<br>";
+        echo 'Scopes: ' . $provider->getDefaultScopes() . "<br>";
         // Not Working
         // echo 'Expired in: ' . $accessToken->getExpires() . "<br>";
         // echo 'Already expired? ' . ($accessToken->hasExpired() ? 'expired' : 'not expired') . "<br>";
