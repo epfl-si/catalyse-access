@@ -4,7 +4,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 $log = new Monolog\Logger('catalyse-access');
 $log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Monolog\Logger::DEBUG));
-$log->warning('Foo');
+// Log format are "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
 
 $provider = new \League\OAuth2\Client\Provider\GenericProvider([
     'clientId'                => getenv()['OAUTH_CLIENT_ID'],     // The client ID assigned to you by the provider
@@ -55,9 +55,9 @@ if (!isset($_GET['code'])) {
 
         // We have an access token, which we may use in authenticated
         // requests against the service provider's API.
-        echo 'Access Token: ' . $accessToken->getToken() . "<br>";
-        echo 'Refresh Token: ' . $accessToken->getRefreshToken() . "<br>";
-        echo 'Scopes: ' . $provider->getDefaultScopes() . "<br>";
+        //echo 'Access Token: ' . $accessToken->getToken() . "<br>";
+        //echo 'Refresh Token: ' . $accessToken->getRefreshToken() . "<br>";
+        //echo 'Scopes: ' . $provider->getDefaultScopes() . "<br>";
         // Not Working
         // echo 'Expired in: ' . $accessToken->getExpires() . "<br>";
         // echo 'Already expired? ' . ($accessToken->hasExpired() ? 'expired' : 'not expired') . "<br>";
@@ -66,16 +66,40 @@ if (!isset($_GET['code'])) {
         // resource owner.
         $resourceOwner = $provider->getResourceOwner($accessToken);
 
-        var_export($resourceOwner->toArray());
+        //var_dump($resourceOwner->toArray()['Sciper']);
+        $loggedSciper = $resourceOwner->toArray()['Sciper'];
 
-        // The provider provides a way to get an authenticated API request for
-        // the service, using the access token; it returns an object conforming
-        // to Psr\Http\Message\RequestInterface.
-        $request = $provider->getAuthenticatedRequest(
-            'GET',
-            'https://service.example.com/resource',
-            $accessToken
-        );
+        try {
+
+            // https://docs.guzzlephp.org/en/stable/quickstart.html
+            $websrv = new GuzzleHttp\Client(['base_uri' => 'https://websrv.epfl.ch/cgi-bin/']);
+            $res = $websrv->request('GET', 'rwsaccred/getRights', [
+                'query' => [
+                    'app' => getenv()['WEBSRV_APP_NAME'],
+                    'caller' => getenv()['WEBSRV_APP_CALLER'],
+                    'password' => getenv()['WEBSRV_APP_PASSWORD'],
+                    'rightid' => 'sig0000',
+                    'persid' => $loggedSciper,
+                ]
+            ]);
+
+            if (200 !== $res->getStatusCode()) {
+                throw new Exception("Error processing request on websrv");
+            }
+
+            $result = json_decode($res->getBody())->result;
+
+
+        } catch (Exception | ClientException $e) {
+
+            if ($e instanceof Exception) {
+                $log->error($e->getMessage());
+            } else {
+                $log->error(Psr7\Message::toString($e->getRequest()));
+                $log->error(Psr7\Message::toString($e->getResponse()));
+            }
+
+        }
 
     } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
 
