@@ -89,6 +89,47 @@ if (!isset($_GET['code'])) {
 
             $result = json_decode($res->getBody())->result;
 
+            if (sizeof($result)) {
+                $log->info("$loggedSciper do have sig0000", $result);
+
+                try {
+                    // '<User_VALs><User_VAL><LOGIN_NAME>169419</LOGIN_NAME></User_VAL></User_VALs>'
+                    $payload = new SimpleXMLElement('<User_VALs><User_VAL><LOGIN_NAME>' . $loggedSciper . '</LOGIN_NAME></User_VAL></User_VALs>');
+                    // https://docs.guzzlephp.org/en/stable/quickstart.html
+                    $catalyseAPI = new GuzzleHttp\Client(['base_uri' => getenv()['CATALYSE_API_URL']]);
+                    $res = $catalyseAPI->request('POST', 'User_VAL', [
+                        'query'   => [
+                            'apikey'      => getenv()['CATALYSE_API_KEY']
+                        ],
+                        'body'    => $payload->asXML(),
+                        // curl -H "Content-Type: application/xml" -H "Accept: application/xml" -X POST -d '<User_VALs><User_VAL><LOGIN_NAME></LOGIN_NAME></User_VAL></User_VALs>' https://catalyse-test-proj.epfl.ch/page.aspx/en/eai/api/User_VAL\?apikey\=XXX
+                        'headers' => [
+                            'Accept'       => 'application/xml',
+                            'Content-Type' => 'application/xml',
+                        ]
+                    ]);
+
+                    if (200 !== $res->getStatusCode()) {
+                        throw new ClientException("Error processing request on catalyse API");
+                    }
+
+                } catch (Exception | ClientException $e) {
+
+                    if ($e instanceof Exception) {
+                        $log->error($e->getMessage());
+                    } else {
+                        $log->error(Psr7\Message::toString($e->getRequest()));
+                        $log->error(Psr7\Message::toString($e->getResponse()));
+                    }
+
+                }
+
+            } else {
+                $log->info("$loggedSciper doesn't have sig0000");
+            }
+
+            // in all case redirect to https://catalyse-buyer.epfl.ch
+            header( 'Location: https://catalyse-buyer.epfl.ch' );
 
         } catch (Exception | ClientException $e) {
 
