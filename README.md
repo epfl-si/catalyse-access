@@ -12,7 +12,7 @@ A intercalary page to handle access to "catalyse".
 To do once:
 1. get your own copy with `git clone`
 3. add the line `127.0.0.1	catalyse-access-dev.epfl.ch` in your `/etc/hosts`
-4. create the `.env` file from the `.env.sample`
+4. create the `app/.htacess` file from the `app/sample.htaccess`
 
 Then, whenever you want to hack on it:
 1. run `make up` to start the project

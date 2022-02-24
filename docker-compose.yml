@@ -5,7 +5,5 @@ services:
     image: php:7-apache-buster
     ports:
       - "8123:80"
-    env_file:
-      - .env
     volumes:
       - ./app:/var/www/html/
