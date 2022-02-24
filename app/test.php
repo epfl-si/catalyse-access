@@ -1,13 +1,7 @@
 <?php
 
-require './utils.php';
-echo '<h3 name="phpinfo">phpinfo</h3>';
-phpinfo();
-echo '<h3 name="getenv">getenv</h3>';
-echo "<pre>";
-var_dump(getenv());
-echo "</pre>";
-echo '<h3 name="server">$_SERVER</h3>';
-echo "<pre>";
-var_dump($_SERVER);
-echo "</pre>";
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+echo "This is a test page";
