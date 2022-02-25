@@ -1,3 +1,7 @@
+# Life easier with bash...
+SHELL := /bin/bash
+
+
 .PHONY: help
 ## Print this help (see <https://gist.github.com/klmr/575726c7e05d8780505a> for explanation)
 help:
@@ -31,3 +35,34 @@ logs:
 ## create the app/app.log file
 applog:
 	touch app/app.log && chmod 777 app/app.log
+
+
+#
+# DEPLOYMENT
+#
+.PHONY: check-rclone
+check-rclone:
+	@type rclone > /dev/null 2>&1 || { echo >&2 "Please install rclone by running:\n$ curl https://rclone.org/install.sh | sudo bash\nor visit https://rclone.org/install/\nAborting."; exit 1; }
+
+.PHONY: check-keybase
+check-keybase:
+	@type keybase > /dev/null 2>&1 || { echo >&2 "Please install keybase. Aborting."; exit 1; }
+
+# Secrets for webdav access
+# Not that it will fail if not found...
+include /keybase/team/epfl_catalyse/source_for_makefile
+
+.PHONY: dav-ls
+## List remote files
+dav-ls: check-rclone check-keybase
+	rclone lsf ":webdav,url='https://$${CATALYSE_WEBDAV_USER}:$${CATALYSE_WEBDAV_PASS}@$${CATALYSE_WEBDAV_URL}':/htdocs"
+
+.PHONY: dav-lsd
+## List remote directories
+dav-lsd: check-rclone check-keybase
+	rclone lsd ":webdav,url='https://$${CATALYSE_WEBDAV_USER}:$${CATALYSE_WEBDAV_PASS}@$${CATALYSE_WEBDAV_URL}':/htdocs"
+
+.PHONY: dav-sync
+## Sync files
+dav-sync: check-rclone check-keybase
+	rclone sync -i ./app ":webdav,url='https://$${CATALYSE_WEBDAV_USER}:$${CATALYSE_WEBDAV_PASS}@$${CATALYSE_WEBDAV_URL}':/htdocs"
