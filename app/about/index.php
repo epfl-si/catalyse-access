@@ -1,5 +1,11 @@
 <?php
-
+// redirect to catalyse.epfl.ch if old URL
+if ('catalyse-access.epfl.ch' === $_SERVER['SERVER_NAME']) {
+    $redirectURL = $_SERVER['REQUEST_SCHEME'] . '://catalyse.epfl.ch/about/';
+    // $redirectURL .= $_SERVER['SERVER_PORT'] ? ':'.$_SERVER['SERVER_PORT'] : '';
+    header('Location: ' . $redirectURL);
+    die();
+}
 ?>
 
 <h2>Catalyse access (<?=getenv('CATALYSE_ACCESS_VERSION')?>)</h2>

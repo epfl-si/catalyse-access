@@ -10,6 +10,13 @@ require __DIR__ . '/vendor/autoload.php';
 $log = new Monolog\Logger('catalyse-access');
 $log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Monolog\Logger::DEBUG));
 
+// redirect to catalyse.epfl.ch if old URL
+if ('catalyse-access.epfl.ch' === $_SERVER['SERVER_NAME']) {
+    $redirectURL = $_SERVER['REQUEST_SCHEME'] . '://catalyse.epfl.ch';
+    // $redirectURL .= $_SERVER['SERVER_PORT'] ? ':'.$_SERVER['SERVER_PORT'] : '';
+    header('Location: ' . $redirectURL);
+    die();
+}
 
 // Define the CATALYSE ENV
 $CATALYSE_ENV = $_GET['CATALYSE_ENV'] ?? "prod";
@@ -33,7 +40,7 @@ if ('test' === $CATALYSE_ENV) {
 
 
 // Define the APP ENV (LOCAL (docker) of REMOTE (LAMP TKGI))
-if ('catalyse-access-dev.epfl.ch' === $_SERVER['SERVER_NAME'] && '8123' == $_SERVER['SERVER_PORT']) {
+if ('catalyse-dev.epfl.ch' === $_SERVER['SERVER_NAME'] && '8123' == $_SERVER['SERVER_PORT']) {
     // We are LOCAL
     $OAUTH_REDIRECT = getenv('OAUTH_REDIRECT_LOCAL').$OAUTH_REDIRECT;
     $OAUTH_CLIENT_ID = getenv('OAUTH_CLIENT_ID_LOCAL');
