@@ -127,22 +127,22 @@ if (!isset($_GET['code'])) {
 
             // https://docs.guzzlephp.org/en/stable/quickstart.html
             $websrv = new GuzzleHttp\Client(['base_uri' => 'https://websrv.epfl.ch/cgi-bin/']);
-
-            // User is employee?
-            $employeeres = $websrv->request('GET', 'rwspersons/getPerson', [
-                'query' => [
-                    'app' => getenv('WEBSRV_APP_NAME'),
-                    'caller' => getenv('WEBSRV_APP_CALLER'),
-                    'password' => getenv('WEBSRV_APP_PASSWORD'),
-                    'id' => $loggedSciper,
-                ]
-            ]);
-
-            if (200 !== $employeeres->getStatusCode()) {
-                $log->debug('websrv request returned ' . $employeeres->getStatusCode(), [$employeeres->getBody()]);
-                throw new Exception("Error processing request on websrv (getPerson)");
-            }
-            $employee = json_decode($employeeres->getBody())->result;
+            // 
+            // // User is employee?
+            // $employeeres = $websrv->request('GET', 'rwspersons/getPerson', [
+            //     'query' => [
+            //         'app' => getenv('WEBSRV_APP_NAME'),
+            //         'caller' => getenv('WEBSRV_APP_CALLER'),
+            //         'password' => getenv('WEBSRV_APP_PASSWORD'),
+            //         'id' => $loggedSciper,
+            //     ]
+            // ]);
+            // 
+            // if (200 !== $employeeres->getStatusCode()) {
+            //     $log->debug('websrv request returned ' . $employeeres->getStatusCode(), [$employeeres->getBody()]);
+            //     throw new Exception("Error processing request on websrv (getPerson)");
+            // }
+            // $employee = json_decode($employeeres->getBody())->result;
 
             // User has sig000 rights?
             $sig0000res = $websrv->request('GET', 'rwsaccred/getRights', [
@@ -162,7 +162,8 @@ if (!isset($_GET['code'])) {
             $sig0000 = json_decode($sig0000res->getBody())->result;
 
             // The user is employee with a least one right sig0000, process
-            if ('Personnel' === $employee->status && sizeof($sig0000)) {
+            // if ('Personnel' === $employee->status && sizeof($sig0000)) {
+            if (sizeof($sig0000)) {
                 $log->info("$loggedSciper do have sig0000", $sig0000);
 
                 try {
