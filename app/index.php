@@ -26,16 +26,19 @@ if ('test' === $CATALYSE_ENV) {
     $CATALYSE_API_KEY = getenv('CATALYSE_API_KEY_TEST');
     $CATALYSE_LANDING_PAGE = getenv('CATALYSE_LANDING_PAGE_TEST');
     $OAUTH_REDIRECT = getenv('OAUTH_REDIRECT_TEST');
+    $WEBSRV_URL = getenv('WEBSRV_URL_TEST');
 } else if ('qual' === $CATALYSE_ENV) {
     $CATALYSE_API_URL = getenv('CATALYSE_API_URL_QUAL');
     $CATALYSE_API_KEY = getenv('CATALYSE_API_KEY_QUAL');
     $CATALYSE_LANDING_PAGE = getenv('CATALYSE_LANDING_PAGE_QUAL');
     $OAUTH_REDIRECT = getenv('OAUTH_REDIRECT_QUAL');
+    $WEBSRV_URL = getenv('WEBSRV_URL_QUAL');
 } else { // fallback to prod
     $CATALYSE_API_URL = getenv('CATALYSE_API_URL_PROD');
     $CATALYSE_API_KEY = getenv('CATALYSE_API_KEY_PROD');
     $CATALYSE_LANDING_PAGE = getenv('CATALYSE_LANDING_PAGE_PROD');
     $OAUTH_REDIRECT = getenv('OAUTH_REDIRECT_PROD');
+    $WEBSRV_URL = getenv('WEBSRV_URL_PROD');
 }
 
 
@@ -126,7 +129,7 @@ if (!isset($_GET['code'])) {
         try {
 
             // https://docs.guzzlephp.org/en/stable/quickstart.html
-            $websrv = new GuzzleHttp\Client(['base_uri' => 'https://websrv.epfl.ch/cgi-bin/']);
+            $websrv = new GuzzleHttp\Client(['base_uri' => $WEBSRV_URL]);
             // 
             // // User is employee?
             // $employeeres = $websrv->request('GET', 'rwspersons/getPerson', [
@@ -203,6 +206,7 @@ if (!isset($_GET['code'])) {
                 $log->info("$loggedSciper doesn't have sig0000");
             }
 
+            // sleep(1);
             // in all case redirect to https://catalyse-buyer.epfl.ch
             // this send a 302
             header( 'Location: ' . $CATALYSE_LANDING_PAGE );
