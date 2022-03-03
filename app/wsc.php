@@ -88,7 +88,7 @@ if (!empty($CATALYSE_ENV) && !empty($SCIPER) && is_numeric($SCIPER)) {
         echo "<pre>";
         echo "Request payload:\n";
         var_dump($payload);
-        echo "\nRequest status <b>" . $res->getStatusCode() . "</b>\n";
+        echo "\nRequest status <b>" . $res->getStatusCode() . ", " . $res->getReasonPhrase() . "</b>\n";
         echo "\nResponse body:\n";
         var_dump((string) $res->getBody());
         echo "</pre>";
