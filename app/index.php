@@ -14,13 +14,13 @@ $log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Monolog\Logger::D
 if ('catalyse-access.epfl.ch' === $_SERVER['SERVER_NAME']) {
     $redirectURL = $_SERVER['REQUEST_SCHEME'] . '://catalyse.epfl.ch';
     // $redirectURL .= $_SERVER['SERVER_PORT'] ? ':'.$_SERVER['SERVER_PORT'] : '';
+    $log->info("Redirecting from catalyse-access.epfl.ch to catalyse.epfl.ch", []);
     header('Location: ' . $redirectURL);
     die();
 }
 
 // Define the CATALYSE ENV
 $CATALYSE_ENV = $_GET['CATALYSE_ENV'] ?? "prod";
-$log->debug("CATALYSE_ENV is", [$CATALYSE_ENV]);
 if ('test' === $CATALYSE_ENV) {
     $CATALYSE_API_URL = getenv('CATALYSE_API_URL_TEST');
     $CATALYSE_API_KEY = getenv('CATALYSE_API_KEY_TEST');
@@ -41,7 +41,6 @@ if ('test' === $CATALYSE_ENV) {
     $WEBSRV_URL = getenv('WEBSRV_URL_PROD');
 }
 
-
 // Define the APP ENV (LOCAL (docker) of REMOTE (LAMP TKGI))
 if ('catalyse-dev.epfl.ch' === $_SERVER['SERVER_NAME'] && '8123' == $_SERVER['SERVER_PORT']) {
     // We are LOCAL
@@ -54,13 +53,13 @@ if ('catalyse-dev.epfl.ch' === $_SERVER['SERVER_NAME'] && '8123' == $_SERVER['SE
     $OAUTH_CLIENT_ID = getenv('OAUTH_CLIENT_ID_REMOTE');
     $OAUTH_CLIENT_SECRET = getenv('OAUTH_CLIENT_SECRET_REMOTE');
 }
- 
+$log->debug("ENV INFO", ['CATALYSE_API_URL' => $CATALYSE_API_URL, 'CATALYSE_LANDING_PAGE' => $CATALYSE_LANDING_PAGE, 'OAUTH_REDIRECT' => $OAUTH_REDIRECT, 'WEBSRV_URL' => $WEBSRV_URL]);
 
 $provider = new \League\OAuth2\Client\Provider\GenericProvider([
     'clientId'                => $OAUTH_CLIENT_ID,     // The client ID assigned to you by the provider
     'clientSecret'            => $OAUTH_CLIENT_SECRET, // The client password assigned to you by the provider
     'redirectUri'             => $OAUTH_REDIRECT,      // Wherever Tequila will redirect the user. Have to match the oAuth client configuration
-    // TODO: ask if our oAuth key works on tequila-test...
+    // TODO: ask if our oAuth key works on test-tequila... See INC0466882
     'urlAuthorize'            => 'https://tequila.epfl.ch/v2/OAUTH2IdP/auth',
     'urlAccessToken'          => 'https://tequila.epfl.ch/v2/OAUTH2IdP/token',
     'urlResourceOwnerDetails' => 'https://tequila.epfl.ch/v2/OAUTH2IdP/userinfo'
@@ -91,11 +90,9 @@ if (!isset($_GET['code'])) {
 } elseif (empty($_GET['state']) || (isset($_SESSION['oauth2state']) && $_GET['state'] !== $_SESSION['oauth2state'])) {
 
     $log->debug("Mitigate CSRF attack, cleansing previous stored state");
-
     if (isset($_SESSION['oauth2state'])) {
         unset($_SESSION['oauth2state']);
     }
-
     exit('Invalid state');
 
 } else {
@@ -121,31 +118,14 @@ if (!isset($_GET['code'])) {
         // resource owner.
         $resourceOwner = $provider->getResourceOwner($accessToken);
 
-        //var_dump($resourceOwner->toArray()['Sciper']);
         $loggedSciper = $resourceOwner->toArray()['Sciper'];
 
-        $log->debug("Login successful", $resourceOwner->toArray());
+        $log->info("$loggedSciper logged in successfully", $resourceOwner->toArray());
 
         try {
 
             // https://docs.guzzlephp.org/en/stable/quickstart.html
             $websrv = new GuzzleHttp\Client(['base_uri' => $WEBSRV_URL]);
-            // 
-            // // User is employee?
-            // $employeeres = $websrv->request('GET', 'rwspersons/getPerson', [
-            //     'query' => [
-            //         'app' => getenv('WEBSRV_APP_NAME'),
-            //         'caller' => getenv('WEBSRV_APP_CALLER'),
-            //         'password' => getenv('WEBSRV_APP_PASSWORD'),
-            //         'id' => $loggedSciper,
-            //     ]
-            // ]);
-            // 
-            // if (200 !== $employeeres->getStatusCode()) {
-            //     $log->debug('websrv request returned ' . $employeeres->getStatusCode(), [$employeeres->getBody()]);
-            //     throw new Exception("Error processing request on websrv (getPerson)");
-            // }
-            // $employee = json_decode($employeeres->getBody())->result;
 
             // User has sig000 rights?
             $sig0000res = $websrv->request('GET', 'rwsaccred/getRights', [
@@ -159,7 +139,7 @@ if (!isset($_GET['code'])) {
             ]);
 
             if (200 !== $sig0000res->getStatusCode()) {
-                $log->debug('websrv request returned ' . $sig0000res->getStatusCode(), [$sig0000res->getBody()]);
+                $log->error('websrv request returned ' . $sig0000res->getStatusCode(), [$sig0000res->getBody()]);
                 throw new Exception("Error processing request on websrv (getRights)");
             }
             $sig0000 = json_decode($sig0000res->getBody())->result;
@@ -183,12 +163,19 @@ if (!isset($_GET['code'])) {
                         'headers' => [
                             'Accept'       => 'application/xml',
                             'Content-Type' => 'application/xml',
-                        ]
+                        ],
+                        'timeout' => 10
                     ]);
 
                     if (200 !== $res->getStatusCode()) {
-                        $log->debug('CatalyseAPI request returned ' . $res->getStatusCode(), [$res->getBody()]);
+                        $log->error('CatalyseAPI request returned ' . $res->getStatusCode(), [$res->getBody()]);
                         throw new ClientException("Error processing request on catalyse API");
+                    } else {
+                        // See https://docs.guzzlephp.org/en/stable/quickstart.html#using-responses
+                        $body = $res->getBody();
+                        // Explicitly cast the body to a string
+                        $stringBody = (string) $body;
+                        $log->debug('xxCatalyse API response body ',  [$stringBody]);
                     }
 
                 } catch (Exception | ClientException $e) {
@@ -206,9 +193,9 @@ if (!isset($_GET['code'])) {
                 $log->info("$loggedSciper doesn't have sig0000");
             }
 
-            // sleep(1);
             // in all case redirect to https://catalyse-buyer.epfl.ch
             // this send a 302
+            $log->debug("Redirecting $loggedSciper to $CATALYSE_LANDING_PAGE");
             header( 'Location: ' . $CATALYSE_LANDING_PAGE );
             // job's done
             exit();
