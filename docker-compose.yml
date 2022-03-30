@@ -1,8 +1,9 @@
-version: '3.8'
+version: '3.9'
 
 services:
   catalyse-access-web:
-    image: php:8-apache-buster
+    #image: php:8-apache-buster
+    build: .
     ports:
       - "8123:80"
     volumes:

@@ -1,22 +1,11 @@
-<?php
-// redirect to catalyse.epfl.ch if old URL
-if ('catalyse-access.epfl.ch' === $_SERVER['SERVER_NAME']) {
-    $redirectURL = $_SERVER['REQUEST_SCHEME'] . '://catalyse.epfl.ch/about/';
-    // $redirectURL .= $_SERVER['SERVER_PORT'] ? ':'.$_SERVER['SERVER_PORT'] : '';
-    header('Location: ' . $redirectURL);
-    die();
-}
-?>
+<h2>Catalyse.epfl.ch</h2>
 
-<h2>Catalyse access (<?=getenv('CATALYSE_ACCESS_VERSION')?>)</h2>
+<p>Just a <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301">301</a> redirect to catalyse-buyer.epfl.ch</p>
 
-<p>A intercalary page to handle access to "catalyse".</p>
-
-<h3>Env</h3>
 <ul>
-  <li><a href="/index.php?CATALYSE_ENV=test">login test (recette test)</a></li>
-  <li><a href="/index.php?CATALYSE_ENV=qual">login qual (recette maintenance)</a></li>
-  <li><a href="/index.php">login prod (default)</a></li>
+  <li><a href="/test">test (recette test)</a></li>
+  <li><a href="/qual">qual (recette maintenance)</a></li>
+  <li><a href="/">prod (default)</a></li>
 </ul>
 
 <h3>Sources</h3>
